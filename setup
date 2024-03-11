@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+
+cp generate_website.py /usr/local/bin/
+cp generate_website.service  /etc/systemd/system/
+
+
+

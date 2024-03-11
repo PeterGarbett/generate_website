@@ -1,0 +1,19 @@
+#
+#	This file needs to be on /etc/systemd/system/
+#	Low priority because this is not time critical
+#	and is cpu intensive so can kill the box comms
+#
+[Unit]
+Description=generate website for snapshots
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/generate_website.py /home/peter/Croft_Motion_Images/ /var/www/html/ "Intrusion Detection"
+
+User=peter
+Restart=always
+RestartSec=50s
+
+[Install]
+WantedBy=multi-user.target
+
