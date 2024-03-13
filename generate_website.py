@@ -30,6 +30,9 @@ def handler(signum, frame):
     exit()
 
 
+#
+#   On an inotify event, queue up the filename
+#   of what has just arrived
 
 
 def act(q, path, filename):
@@ -39,6 +42,11 @@ def act(q, path, filename):
     if debug:
         print(path + filename)
     q.put(path + filename)
+
+
+#
+#   Setup inotify
+#
 
 
 def watch(q, i, path):
@@ -65,6 +73,13 @@ def transfer(path, filename, website):
 
     debug = False
 
+#   Something may have happened to the file while
+#   it's name was on the queue, notably a rename
+
+
+    if not os.path.exists(filename):
+        return
+
     if debug:
         print("move", path + filename, " to ", website + filename)
     try:
@@ -78,7 +93,7 @@ def transfer(path, filename, website):
 
 def build_website(website, title):
 
-    debug = False
+    debug = True
 
     try:
         command = (
@@ -104,7 +119,7 @@ def generate_image_website(path, website, title):
     website_birth = datetime.now()
     data_last_arrival = datetime.now()
 
-    debug = False
+    debug = True
 
     parent = multiprocessing.parent_process()
     parentPID = 0  # parent.pid
