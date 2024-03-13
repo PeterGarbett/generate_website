@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 #
 # Copy images from one directory as they appear in it
 # Place them on a directory intended to host a website
@@ -15,6 +14,8 @@ from multiprocessing import Pool
 from multiprocessing import Process
 from multiprocessing import active_children
 from time import sleep
+import inotify
+import inotify.adapters
 
 # Attempt orderly shutdown
 
@@ -29,7 +30,6 @@ def handler(signum, frame):
     exit()
 
 
-import inotify.adapters
 
 
 def act(q, path, filename):
@@ -63,7 +63,7 @@ import queue
 
 def transfer(path, filename, website):
 
-    debug = True
+    debug = False
 
     if debug:
         print("move", path + filename, " to ", website + filename)
@@ -78,7 +78,7 @@ def transfer(path, filename, website):
 
 def build_website(website, title):
 
-    debug = True
+    debug = False
 
     try:
         command = (
@@ -104,7 +104,7 @@ def generate_image_website(path, website, title):
     website_birth = datetime.now()
     data_last_arrival = datetime.now()
 
-    debug = True
+    debug = False
 
     parent = multiprocessing.parent_process()
     parentPID = 0  # parent.pid

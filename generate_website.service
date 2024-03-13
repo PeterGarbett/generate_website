@@ -8,9 +8,9 @@ Description=generate website for snapshots
 
 [Service]
 Type=exec
-ExecStart=/usr/local/bin/generate_website.py /home/peter/Croft_Motion_Images/ /var/www/html/ "Intrusion Detection"
+ExecStart=/home/embed/generate_website/bin/python3 /home/embed/generate_website/generate_website.py /exdrive/Snapshots/Local/ /var/www/html "Intrusion detection"
 
-User=peter
+User=embed
 Restart=always
 RestartSec=50s
 
