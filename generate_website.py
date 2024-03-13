@@ -76,8 +76,7 @@ def transfer(path, filename, website):
 #   Something may have happened to the file while
 #   it's name was on the queue, notably a rename
 
-
-    if not os.path.exists(filename):
+    if not os.path.exists(path+ filename):
         return
 
     if debug:
@@ -93,7 +92,7 @@ def transfer(path, filename, website):
 
 def build_website(website, title):
 
-    debug = True
+    debug = False
 
     try:
         command = (
@@ -119,7 +118,7 @@ def generate_image_website(path, website, title):
     website_birth = datetime.now()
     data_last_arrival = datetime.now()
 
-    debug = True
+    debug = False
 
     parent = multiprocessing.parent_process()
     parentPID = 0  # parent.pid
@@ -222,6 +221,15 @@ if __name__ == "__main__":
     path = inputargs[0]
     website = inputargs[1]
     title = inputargs[2]
+
+    if not os.path.exists(path):
+        print("Input directory not found, exiting")
+        exit()
+
+    if not os.path.exists(website):
+        print("Output website  directory not found, exiting")
+        exit()
+
 
     print(
         "Form website on :",
