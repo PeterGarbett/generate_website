@@ -3,7 +3,7 @@
 #
 [Unit]
 Description=Generate website for snapshots
-After=mount-usb
+After=mount-usb.service
 
 [Service]
 Type=exec
@@ -13,7 +13,7 @@ User=embed
 CPUSchedulingPolicy=rr
 CPUSchedulingPriority=30
 Restart=always
-RestartSec=2:00:00
+RestartSec=2048
 
 [Install]
 WantedBy=multi-user.target
