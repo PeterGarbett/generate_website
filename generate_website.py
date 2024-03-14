@@ -36,7 +36,6 @@ def handler(signum, frame):
 
 
 def act(q, path, filename):
-
     debug = False
 
     if debug:
@@ -50,7 +49,6 @@ def act(q, path, filename):
 
 
 def watch(q, i, path):
-
     for event in i.event_gen(yield_nones=False):
         (_, type_names, path, filename) = event
         if "IN_CLOSE_WRITE" in type_names:
@@ -58,7 +56,6 @@ def watch(q, i, path):
 
 
 def initiate_watch(q, path):
-
     i = inotify.adapters.InotifyTree(path)
     watch(q, i, path)
 
@@ -70,13 +67,12 @@ import queue
 
 
 def transfer(path, filename, website):
-
     debug = False
 
-#   Something may have happened to the file while
-#   it's name was on the queue, notably a rename
+    #   Something may have happened to the file while
+    #   it's name was on the queue, notably a rename
 
-    if not os.path.exists(path+ filename):
+    if not os.path.exists(path + filename):
         return
 
     if debug:
@@ -91,7 +87,6 @@ def transfer(path, filename, website):
 
 
 def build_website(website, title):
-
     debug = False
 
     try:
@@ -112,13 +107,15 @@ from datetime import datetime, timedelta
 websiteTooYoung = 10  # Minutes. Don't redo it this early
 shortestQuietTime = 10  # Don't rebuild unless it looks like a lull in comms
 
+import psutil
+
 
 def generate_image_website(path, website, title):
-
     website_birth = datetime.now()
     data_last_arrival = datetime.now()
+    busy = psutil.cpu_percent(interval=None)
 
-    debug = False
+    debug = True
 
     parent = multiprocessing.parent_process()
     parentPID = 0  # parent.pid
@@ -142,7 +139,6 @@ def generate_image_website(path, website, title):
     new_data_written = False
 
     while True:
-
         try:
             item = q.get_nowait()
             #       If item wasn't available the above generated an Empty exception
@@ -165,7 +161,6 @@ def generate_image_website(path, website, title):
             fileList.append(fname)
 
         except queue.Empty:
-
             if 0 < len(fileList):
                 for i in range(len(fileList)):
                     transfer(path, fileList[i], website)
@@ -173,6 +168,13 @@ def generate_image_website(path, website, title):
                 new_data_written = True
             else:
                 sleep(30)
+
+            #   Don't rebuild if system is busy . This captures the case where
+            # lots of motion triggers are being rejected but no data ends up queued
+
+            busy = psutil.cpu_percent(interval=None)
+            if 50.0 < busy:
+                continue
 
             # Don't rebuild if website too young or data arrived recently
 
@@ -209,7 +211,6 @@ def generate_image_website(path, website, title):
 import sys
 
 if __name__ == "__main__":
-
     runfile = sys.argv.pop(0)
     inputargs = sys.argv
     if len(inputargs) != 3:
@@ -229,7 +230,6 @@ if __name__ == "__main__":
     if not os.path.exists(website):
         print("Output website  directory not found, exiting")
         exit()
-
 
     print(
         "Form website on :",
