@@ -10,8 +10,10 @@ Type=exec
 ExecStart=/home/embed/generate_website/bin/python3 /home/embed/generate_website/generate_website.py /exdrive/Snapshots/Local/ /var/www/html/ "Intrusion Detection"
 
 User=embed
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority=30
 Restart=always
-RestartSec=50s
+RestartSec=2:00:00
 
 [Install]
 WantedBy=multi-user.target
