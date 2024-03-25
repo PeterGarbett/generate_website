@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+#	virtual environment setup for generate_website
+#
+
+virtualenv .
+source ./bin/activate
+pip install inotify
+pip install psutil
+
