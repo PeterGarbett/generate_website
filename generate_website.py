@@ -145,18 +145,23 @@ def generate_image_website(path, website, title):
             data_last_arrival = datetime.now()
             base, fname = os.path.split(item)
 
+            if debug:
+                print("File :", fname)
+                print(" arrived in source directory:", base)
+
             try:
                 parts = fname.split(".")
                 extension = parts[1]
                 if extension != "jpg":
+                    if debug:
+                        print("File ignored\n")
                     continue
-            except Exception as err:
+    
+            except Exception as e:
                 print(e)
+                if debug:
+                    print("File ignored\n")
                 continue
-
-            if debug:
-                print("File :", fname)
-                print(" arrived in source directory:", base)
 
             fileList.append(fname)
 
