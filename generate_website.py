@@ -7,7 +7,8 @@
 # too frequently and when files are still moving
 
 
-import signal, os
+import signal
+import os
 import sys
 import multiprocessing
 from multiprocessing import Queue
@@ -17,26 +18,28 @@ from datetime import datetime, timedelta
 from time import sleep
 import inotify
 import inotify.adapters
+import psutil
 
 # Attempt orderly shutdown
 
 
-def handler(signum, frame):
+def handler(signum):
+    """Catch termination signal so I can terminate child"""
     signame = signal.Signals(signum).name
     print("Caught signal", signame)
 
     for p in multiprocessing.active_children():
         p.terminate()
 
-    exit()
+    sys.exit()
 
 
 #
-#   On an inotify event, queue up the filename
-#   of what has just arrived
 
 
 def act(q, path, filename):
+    """On an inotify event, queue up the filename
+    of what has just arrived"""
     debug = False
 
     if debug:
@@ -49,23 +52,21 @@ def act(q, path, filename):
 #
 
 
-def watch(q, i, path):
+def initiate_watch(q, path):
+    """Setup watching for files arrivving in the source directory"""
+    i = inotify.adapters.InotifyTree(path)
+
     for event in i.event_gen(yield_nones=False):
         (_, type_names, path, filename) = event
         if "IN_CLOSE_WRITE" in type_names:
             act(q, path, filename)
 
 
-def initiate_watch(q, path):
-    i = inotify.adapters.InotifyTree(path)
-    watch(q, i, path)
-
-
-
 # Cheap...
 
 
 def transfer(path, filename, website):
+    """Transfer a file named in the queue to the website"""
     debug = False
 
     #   Something may have happened to the file while
@@ -77,15 +78,16 @@ def transfer(path, filename, website):
     if debug:
         print("move", path + filename, " to ", website + filename)
     try:
-        response = os.system("sudo cp -p " + path + filename + " " + website)
+        os.system("sudo cp -p " + path + filename + " " + website)
     except Exception as err:
-        print("File copy failed:", e)
+        print("File copy failed:", err)
 
 
 # expensive...
 
 
 def build_website(website, title):
+    """Call website builder"""
     debug = False
 
     try:
@@ -94,29 +96,25 @@ def build_website(website, title):
         )
         if debug:
             print(command)
-        response = os.system(command)
+        os.system(command)
     except Exception as err:
         if debug:
             print("Failed to build website", err)
 
 
-
-websiteTooYoung = 10  # Minutes. Don't redo it this early
-shortestQuietTime = 10  # Don't rebuild unless it looks like a lull in comms
-
-import psutil
+WEBSITETOOYOUNG = 10  # Minutes. Don't redo it this early
+SHORTESTQUIETTIME = 10  # Don't rebuild unless it looks like a lull in comms
 
 
 def generate_image_website(path, website, title):
+    ''' Consume filenames from queue and transfer to website, regenerate at intervals'''
     website_birth = datetime.now()
     data_last_arrival = datetime.now()
     busy = psutil.cpu_percent(interval=None)
 
     debug = True
 
-    parent = multiprocessing.parent_process()
-
-    expectedChildren = 1
+    expected_children = 1
 
     q = Queue()
 
@@ -128,7 +126,7 @@ def generate_image_website(path, website, title):
 
     signal.signal(signal.SIGTERM, handler)
 
-    fileList = []
+    file_list = []
     new_data_written = False
 
     while True:
@@ -156,13 +154,13 @@ def generate_image_website(path, website, title):
                     print("File ignored\n")
                 continue
 
-            fileList.append(fname)
+            file_list.append(fname)
 
         except queue.Empty:
-            if 0 < len(fileList):
-                for i in range(len(fileList)):
-                    transfer(path, fileList[i], website)
-                fileList.clear()
+            if 0 < len(file_list):
+                for i in range(len(file_list)):
+                    transfer(path, file_list[i], website)
+                file_list.clear()
                 new_data_written = True
             else:
                 sleep(30)
@@ -180,8 +178,8 @@ def generate_image_website(path, website, title):
             if new_data_written:
                 if debug:
                     print("New file written: consider rebuilding website")
-                if timedelta(minutes=websiteTooYoung) < now - website_birth:
-                    if timedelta(minutes=shortestQuietTime) < now - data_last_arrival:
+                if timedelta(minutes=WEBSITETOOYOUNG) < now - website_birth:
+                    if timedelta(minutes=SHORTESTQUIETTIME) < now - data_last_arrival:
                         if debug:
                             print("Rebuild website")
                         build_website(website, title)
@@ -198,12 +196,12 @@ def generate_image_website(path, website, title):
 
         # Check child is (nominally) active
 
-        childCount = 0
+        child_count = 0
         for p in multiprocessing.active_children():
-            childCount += 1
-        if childCount < expectedChildren:
+            child_count += 1
+        if child_count < expected_children:
             print("Our child has gone missing")
-            exit()  # rely on systemd restart
+            sys.exit()  # rely on systemd restart
 
 
 if __name__ == "__main__":
@@ -213,19 +211,19 @@ if __name__ == "__main__":
         print(
             "Incorrect usage! Should be : <path>/generate_website.py <File origin directory> <Website directory> <Website title>"
         )
-        exit()
+        sys.exit()
 
     path = inputargs[0]
     website = inputargs[1]
     title = inputargs[2]
 
     if not os.path.exists(path):
-        print("Input directory not found, exiting")
-        exit()
+        print("Input directory not found, sys.exiting")
+        sys.exit()
 
     if not os.path.exists(website):
-        print("Output website  directory not found, exiting")
-        exit()
+        print("Output website  directory not found, sys.exiting")
+        sys.exit()
 
     print(
         "Form website on :",
