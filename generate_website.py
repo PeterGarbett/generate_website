@@ -8,11 +8,12 @@
 
 
 import signal, os
+import sys
 import multiprocessing
 from multiprocessing import Queue
-from multiprocessing import Pool
 from multiprocessing import Process
-from multiprocessing import active_children
+import queue
+from datetime import datetime, timedelta
 from time import sleep
 import inotify
 import inotify.adapters
@@ -60,8 +61,6 @@ def initiate_watch(q, path):
     watch(q, i, path)
 
 
-import os
-import queue
 
 # Cheap...
 
@@ -99,10 +98,8 @@ def build_website(website, title):
     except Exception as err:
         if debug:
             print("Failed to build website", err)
-        pass
 
 
-from datetime import datetime, timedelta
 
 websiteTooYoung = 10  # Minutes. Don't redo it this early
 shortestQuietTime = 10  # Don't rebuild unless it looks like a lull in comms
@@ -118,7 +115,6 @@ def generate_image_website(path, website, title):
     debug = True
 
     parent = multiprocessing.parent_process()
-    parentPID = 0  # parent.pid
 
     expectedChildren = 1
 
@@ -132,10 +128,7 @@ def generate_image_website(path, website, title):
 
     signal.signal(signal.SIGTERM, handler)
 
-    P1PID = p1.pid
-
     fileList = []
-
     new_data_written = False
 
     while True:
@@ -156,7 +149,7 @@ def generate_image_website(path, website, title):
                     if debug:
                         print("File ignored\n")
                     continue
-    
+
             except Exception as e:
                 print(e)
                 if debug:
@@ -212,8 +205,6 @@ def generate_image_website(path, website, title):
             print("Our child has gone missing")
             exit()  # rely on systemd restart
 
-
-import sys
 
 if __name__ == "__main__":
     runfile = sys.argv.pop(0)
