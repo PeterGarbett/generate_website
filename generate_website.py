@@ -142,7 +142,7 @@ def generate_image_website(path, website, title):
 
             try:
                 parts = fname.split(".")
-                extension = parts[1]
+                extension = parts[1].lower()
                 if extension != "jpg":
                     if debug:
                         print("File ignored\n")
