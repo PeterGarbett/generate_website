@@ -10,6 +10,8 @@
 import signal
 import os
 import sys
+
+sys.path.insert(0, "../intrusion")
 import multiprocessing
 from multiprocessing import Queue
 from multiprocessing import Process
@@ -19,6 +21,9 @@ from time import sleep
 import inotify
 import inotify.adapters
 import psutil
+import yolo
+
+remove_boring = True
 
 # Attempt orderly shutdown
 
@@ -62,18 +67,27 @@ def initiate_watch(q, path):
             act(q, path, filename)
 
 
-# Cheap...
+# Cheap... if yolo not involved
 
 
 def transfer(path, filename, website):
     """Transfer a file named in the queue to the website"""
     debug = False
 
+    lifeforms = set(["person", "dog"])
+
     #   Something may have happened to the file while
     #   it's name was on the queue, notably a rename
 
     if not os.path.exists(path + filename):
         return
+
+    if remove_boring:
+        found = set(yolo.yolo_file(path + filename))
+        found_lifeforms = found & lifeforms
+        if not found_lifeforms:
+            os.system("sudo rm " + path + filename)
+            return
 
     if debug:
         print("move", path + filename, " to ", website + filename)
@@ -107,12 +121,12 @@ SHORTESTQUIETTIME = 10  # Don't rebuild unless it looks like a lull in comms
 
 
 def generate_image_website(path, website, title):
-    ''' Consume filenames from queue and transfer to website, regenerate at intervals'''
+    """Consume filenames from queue and transfer to website, regenerate at intervals"""
     website_birth = datetime.now()
     data_last_arrival = datetime.now()
     busy = psutil.cpu_percent(interval=None)
 
-    debug = True
+    debug = False
 
     expected_children = 1
 
@@ -205,6 +219,7 @@ def generate_image_website(path, website, title):
 
 
 if __name__ == "__main__":
+
     runfile = sys.argv.pop(0)
     inputargs = sys.argv
     if len(inputargs) != 3:
@@ -233,5 +248,8 @@ if __name__ == "__main__":
         " for website called",
         title,
     )
+
+    if remove_boring:
+        yolo.initialise_yolo()
 
     generate_image_website(path, website, title)
