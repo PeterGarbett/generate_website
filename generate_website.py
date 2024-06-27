@@ -85,11 +85,12 @@ def transfer(path, filename, website):
         return
 
     if remove_boring:
-        found = set(yolo.yolo_file(path + filename))
-        found_lifeforms = found & lifeforms
-        if not found_lifeforms:
-            os.system("sudo rm " + path + filename)
-            return
+        if not "test" in filename:
+            found = set(yolo.yolo_file(path + filename))
+            found_lifeforms = found & lifeforms
+            if not found_lifeforms:
+                os.system("sudo rm " + path + filename)
+                return
 
     if debug:
         print("move", path + filename, " to ", website + filename)
