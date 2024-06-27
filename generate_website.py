@@ -11,7 +11,6 @@ import signal
 import os
 import sys
 
-sys.path.insert(0, "../intrusion")
 import multiprocessing
 from multiprocessing import Queue
 from multiprocessing import Process
@@ -21,9 +20,12 @@ from time import sleep
 import inotify
 import inotify.adapters
 import psutil
-import yolo
 
 remove_boring = True
+
+if remove_boring:
+    sys.path.insert(0, "/home/embed/intrusion")
+    import yolo
 
 # Attempt orderly shutdown
 
