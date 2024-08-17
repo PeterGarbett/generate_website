@@ -20,6 +20,7 @@ from time import sleep
 import inotify
 import inotify.adapters
 import psutil
+import touch
 
 remove_boring = True
 
@@ -171,9 +172,22 @@ def generate_image_website(path, website, title):
                     print("File ignored\n")
                 continue
 
+            file_tuple = os.path.splitext(fname)
+            file_extension = file_tuple[1]
+            file = file_tuple[0]
+
+            if debug:
+                print("Modify creation date:")
+                print("dir:", base)
+                print("File :", file)
+                print("File :", file_extension)
+
+            touch.make_date_match_name(base, file, file_extension)
+
             file_list.append(fname)
 
         except queue.Empty:
+            sleep(60)   # Wait in case further actions are in progress
             if 0 < len(file_list):
                 for i in range(len(file_list)):
                     transfer(path, file_list[i], website)
