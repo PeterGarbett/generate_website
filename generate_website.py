@@ -182,11 +182,18 @@ def generate_image_website(path, website, title):
                 print("File :", file)
                 print("File :", file_extension)
 
-            touch.make_date_match_name(base, file, file_extension)
+            # Might get file not foud here, which we accept quietly
+
+            try:
+                touch.make_date_match_name(base, file, file_extension)
+            except FileNotFoundError:
+                pass
+            except Exception as err:
+                print(err)
 
             file_list.append(fname)
 
-        except queue.Empty:
+        except q.Empty:
             sleep(60)   # Wait in case further actions are in progress
             if 0 < len(file_list):
                 for i in range(len(file_list)):
