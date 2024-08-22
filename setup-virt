@@ -8,8 +8,8 @@ source ./bin/activate
 pip install inotify
 pip install psutil
 pip install opencv-contrib-python-headless
-pip install paramiko
 pip install numpy
 pip install pillow
 pip install scp
-
+pip install suntime
+pip install pytz
