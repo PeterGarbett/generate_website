@@ -87,11 +87,34 @@ def transfer(path, filename, website):
 
     if remove_boring:
         if not "test" in filename:
-            found = set(yolo.yolo_file(path + filename))
+            found = set(yolo.yolo_file(path + filename,False))
             found_lifeforms = found & lifeforms
             if not found_lifeforms:
                 os.system("sudo rm " + path + filename)
                 return
+
+# Touch here now we have finished 
+
+    if not "test" in filename:
+        file_tuple = os.path.splitext(filename)
+        file_extension = file_tuple[1]
+        file = file_tuple[0]
+
+        if debug:
+            print("Modify creation date:")
+            print("file tuple",file_tuple)
+            print("Base directory:", path)
+            print("File :", file)
+            print("File extension:", file_extension)
+
+     # Might get file not found here, which we accept quietly
+
+        try:
+            touch.make_date_match_name(path, file, file_extension)
+        except FileNotFoundError:
+            pass
+        except Exception as err:
+           print(err)
 
     if debug:
         print("move", path + filename, " to ", website + filename)
@@ -172,28 +195,11 @@ def generate_image_website(path, website, title):
                     print("File ignored\n")
                 continue
 
-            file_tuple = os.path.splitext(fname)
-            file_extension = file_tuple[1]
-            file = file_tuple[0]
-
-            if debug:
-                print("Modify creation date:")
-                print("dir:", base)
-                print("File :", file)
-                print("File :", file_extension)
-
-            # Might get file not foud here, which we accept quietly
-
-            try:
-                touch.make_date_match_name(base, file, file_extension)
-            except FileNotFoundError:
-                pass
-            except Exception as err:
-                print(err)
 
             file_list.append(fname)
 
-        except q.Empty:
+        except Exception as err:
+            print(err)
             sleep(60)   # Wait in case further actions are in progress
             if 0 < len(file_list):
                 for i in range(len(file_list)):
